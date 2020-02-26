@@ -2,6 +2,89 @@
 
 \subsection{主要研究内容}
 
+本研究计划从四个方面研究不同神经网络在不同硬件上的执行效率，从而研究不同AI芯片的特性：
+1.神经网络基本组成Operation用不同的配置在不同硬件上的执行效率；
+2.神经网络基本组成Block（如MobileNet v2中提出的Inverted Residual）用不同的配置在不同硬件上的执行效率；
+3.不同的SOTA模型在不同硬件上使用不同的量化精度对推理准确度、推理速度、能耗的影响；
+4.其他各种Operation在硬件上的表现和影响。
+
+本研究计划通过分析实际执行效率、能耗和理论计算复杂度之间的差别，理解边缘端硬件在并行性、资源调度方面的特性，
+从而对今后边缘端友好的神经网络设计有所启发。
+
 \subsection{技术路线}
 
+\subsubsection{Benchmark选择}
+
+对于针对Operation的benchmark，首先鉴于卷积操作在神经网络中占有相当大的计算量，所以本项目会重点测量卷积
+操作在不同配置下的延时。另外近年来depthwise convolution在各种为效率而设计的移动端神经网络中都逐渐扮演了
+更加重要的角色，所以本研究也会着重测量与分析DWConv（depthwise convolution）。除了Operation的选择之外，
+比较重要的是Operation设置的选择：
+
+Conv的配置空间：本研究计划对三种配置进行测量：
+1.固定输入通道数，改变输出通道数；2.固定输出通道数，改变输入通道数；3.输入通道数等于输出通道数。
+stride选取{1,2}，kernel size选取{1,3,5}。对于不同的输入feature map size，本项目会选取合适频道数区间benchmark，
+在平衡benchmark时间的同时尽量兼顾覆盖到当下流行网络的Operation配置。
+
+DWConv的配置空间：stride选取{1,2}，kernel size选取{3,5,7}。对于不同的feature map size，会选取不同的频道数区间。
+
+对于针对Block的benchmark，TODO
+
+\subsubsection{硬件测量方法}
+
+本研究使用了若干边缘端AI芯片作为研究对象，如：Snapdragon 845/855 CPU、Adreno 630/640 GPU、高通Hexagon DSP、
+Rockchip RK1808计算棒、Rockchip RK3399Pro NPU、Intel Movidius计算棒、Google Edge TPU。项目内用作推理的
+TensorFlow版本为R2.1，编译命令为（--config=android_arm64）。
+
+Snapdragon 845/855 CPU：使用TensorFlow Lite进行benchmark。并且在测试时把CPU的频率固定在了最高频保证延时和
+CPU频率无关。
+
+Adreno 630/640 GPU：使用TensorFlow Lite提供的GPU代理进行benchmark。TensorFlow Lite的GPU代理使用了OpenCL实现。
+本项目修改了部分TensorFlow Lite的GPU代理代码，使得GPU上内存拷贝，内存layout转换的时间可以和用于计算的OpenCL Kernel
+运行时间分开，从而达到分开记时的效果。
+
+Rockchip RK1808计算棒、Rockchip RK3399Pro NPU：Rockchip官方提供了唯一的闭源的神经网络编译器和神经网络推理器RKNN。
+RKNN提供了对每层神经网络延时Profiling的功能。本项目在这两个硬件平台上利用RKNN进行benchmark。
+
+Google Edge TPU：Edge TPU要求使用8-bit量化过并经过额外闭源TPU编译器的tflite模型。在经过TPU编译器优化之后，
+MobileNet v2可以达到惊人的380帧。鉴于TPU在TensorFlow Lite上的代理是闭源的，本项目直接对整个代理的耗时benchmark。
+
 \subsection{可行性分析}
+
+针对多种不同的硬件，本项目都预先做了一些前置性、探索性的benchmark和预先的分析，判断理论与实际之间的差距是否可以
+并值得分析。在这里我们把它们分成几大类：向量化的架构（Hexagon DSP）、通用处理器（Snapdragon CPU）、
+SIMT（Same Instruction Multiple Threads)架构（Adreno GPU）、NPU（RK1808计算棒）。
+
+\subsubsection{向量化硬件架构的测试与特性分析}
+
+在可行性分析阶段，本研究预先测量了Hexagon DSP。首先我们测量了Conv Operation在各个不同的配置下的延时。
+我们发现Hexagon DSP在任何的输入feature map size的条件下，固定输入通道数变化输出通道数、固定输出通道
+数变化输入通道数，Conv $1\times 1$的延时都会随着通道数的变化呈现出阶梯化上升的趋势，并且这个阶梯的长度固定
+为32通道。在翻阅了DSP相关官方文档开源代码之后，我们发现Hexagon DSP上的神经网络推理软件平台
+SNPE（Snapdragon Neuron Processing Engine）在利用DSP汇编实现Conv $1\times 1$的时候，都会把输入的每一维：
+长、宽、通道数扩展为32的倍数，这就导致了上文所阐述的阶梯状上升的延时。
+
+\subsubsection{通用处理器的测试与特性分析}
+
+我们预先测量了Conv $1\times 1$在高通骁龙855 CPU上的表现，经过漫长的测试，我们发现：在固定输入通道数，
+改变输出通道数时，延时会表现出随着通道数阶梯状上升的趋势，并且阶梯长度固定是8；在固定输出通道数，改变输入通道数时，
+延时会随着work load体现出近似线性增加。经过阅读代码之后，我们发现TensorFlow在Arm 64的环境下利用了NEON加速实现
+了自己的GEMM（通用矩阵计算）库RUY，Conv在im2col之后使用了RUY做计算。而RUY在实现矩阵乘法的时候，为了更好地利
+用NEON的SIMD特性，在输出通道数的维度上扩展到8的倍数，而在输入通道数上没有额外的扩展。因而体现出了在输出通道数
+上有延时台阶式上升的现象。
+
+\subsubsection{SIMT架构硬件的测试与特性分析}
+
+我们在Adreno 640上测试了Conv $1\times 1$作为SIMT架构的代表。我们修改了TensorFlow Lite的代码使得我们可以
+指定每一层的OpenCL Kernel的work group size或者是TensorFlow Lite GPU代理的work group size调优方式。我们
+固定调优方式为exhaustive。经过测试我们发现当固定输入通道数，修改输出通道数的时候延时随着通道数有阶梯式的上
+升，而且这个阶梯长度在输入长宽为7时长达几百通道数。但是固定输出通道数修改输入通道数时，延时却随着通道数近似
+线性地增加（每4个通道一采样）。阅读过卷积操作的OpenCL Kernel实现之后，我们发现卷积的实现是在输入通道上
+迭代，而在输出通道上划分work group。因为移动端GPU受限于compute unit数量、每work item的private memory大小，
+每线程占有寄存器数量，所以在GPU上一个批次执行的work group数量是有限的。所以当修改输出通道数时，延时会体现出
+批次化上升的现象。
+
+\subsubsection{NPU架构硬件的测试与特性分析}
+
+我们预先测量了RK1808计算棒在Conv $1\times 1$上的表现。我们发现计算棒不论在固定输入通道数还是在固定输出通道数
+的情况下延时都会表现出比较线性的随通道数增长，但是存在许多配置，延时会偏离化得极高或者极低。由于RK1808上的
+VIP8000 NPU不开源，架构信息偏少，编译器不开源，延时曲线背后的原因暂时没有合理的解释。
