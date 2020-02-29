@@ -20,13 +20,30 @@
 因为卷积和逐通道卷积算子在卷积神经网络中起到了重要的特征提取作用，而且也占有了比较大的运算量，所以
 本项目会着重测量这两个算子在不同通道数下的执行效率。
 
-对于卷积算子，我们会选择三种参数空间：% TODO
+对于卷积算子，我们会选择三种通道数参数空间：
+\begin{enumerate*}
+    \item 输入通道数等于输出通道数；
+    \item 输入通道数固定，输出通道数变化；
+    \item 输出通道数固定，输入通道数变化。
+\end{enumerate*}
+对于逐通道卷积我们选择输入通道数等于输出通道数。
+本项目对任意一个步长$\in \{1,2\}$，内核尺寸$\in \{1,3,5,7\}$的卷积、逐通道卷积都会在上述的
+一个范围内的通道数内做测试。
 
-\paragraph{多种算子测试}
+\paragraph{多种算子或模块测试}
+我们选择了卷积、逐通道卷积、扩张卷积（Dilated Convolution）、分组卷积（Grouped Convolution）、加法、
+连接（Concatenation）、全局池化、全连接、打乱顺序（Shuffle）、混合卷积（Mix Convolution\cite{tan2019mixconv}）
+作为待测的算子。另外，我们选择了MobileNet V1、MobileNet V2、ShuffleNet V1、ShuffleNet V2、ResNet、DenseNet
+这些网络的基本构成模块作为模块的测试。
 
-\paragraph{多种模块测试}
+对于每个算子或模块，我们选择了输入特征图尺寸$\in \{224,112,56,28,14,7\}$，
+步长$\in \{1,2\}$，内核尺寸$\in \{1,3,5,7\}$，分组$\in \{2,3,4,8\}$作为采样空间。
 
 \paragraph{多种模型结合不同量化精度测试}
+在该测试中我们选择了各种SOTA模型，包括了手工设计的模型和经过AutoML生成的模型，
+比如MobileNet系列、ShuffleNet系列、FBNet、ProxylessNas等。我们评估了这些模型在不同硬件
+上用不同的推理引擎和不同的量化方法得到的在ImageNet\cite{krizhevsky2012imagenet}验证集上
+的精度和性能数据。
 
 \subsubsection{硬件测量方法}
 本研究使用了若干边缘端AI芯片作为研究对象，如：
