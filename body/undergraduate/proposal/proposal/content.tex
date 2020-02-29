@@ -29,7 +29,6 @@
 \paragraph{多种模型结合不同量化精度测试}
 
 \subsubsection{硬件测量方法}
-
 本研究使用了若干边缘端AI芯片作为研究对象，如：
 \begin{itemize}
     \item Arm CPU
@@ -62,13 +61,54 @@ Rockchip提供了闭源的神经网络编译器和神经网络推理框架RKNN�
 RKNN提供了对每层神经网络延时分析的功能。本项目在这两个硬件平台上利用RKNN进行基准测试。
 
 \paragraph{Google Edge TPU}
-Edge TPU要求使用tflite模型，并且模型需要经过八位整数量化和Edge TPU的编译器编译。
+Edge TPU要求使用TensorFlow Lite模型，并且模型需要经过八位整数量化和Edge TPU的编译器编译。
 鉴于TPU在TensorFlow Lite上的代理是闭源的，本项目直接对整个代理的耗时基准测试。
 
+\subsubsection{基准测试平台}
+根据上述的不同硬件的测试要求，以及不同的测试项目之间的差异，本项目计划完成一个一体化的测试平台，
+以应对多样化的测试需求。我们根据需求，设计如下的基类：AccuracyTester，AccuracyEvaluator，
+DataPreparer，LatencyTester，LatencyEvaluator，Connection，Sampler。它们各自有如下的职能：
+
+\paragraph{AccuracyTester}
+用于控制精确度测试的节奏。节奏对一部分存储空间较小的测试机（比如手机）比较重要，
+因为在容量较小的情况下，需要把维持在测试机上占有的数据集空间大小。该类会逐步分批次
+拷贝数据集并加载模型进行测试，下一个批次的测试数据集可以选择覆盖上批次数据集以占有尽量少的空间。
+该类测试的模型详细信息来自于Sampler子类的采样。该类会先调用DataPreparer进行数据集
+准备工作，再调用AccuracyEvaluator在各类硬件上测试精确度。
+
+\paragraph{AccuracyEvaluator}
+实现了在不同硬件平台上的精确度测量。不同的硬件要求使用不同的推理框架，该类利用多态
+特性，提供了统一的接口利用准备好的数据集测试不同的硬件上模型的精确度。
+
+\paragraph{DataPreparer}
+实现了在不同平台上的精确度数据集准备工作。因为不同硬件的配套SDK要求的模型和数据集格式有差异，
+所以该类提供统一的接口整理模型与用于测试的ImageNet图片集和标签，并通过Connection类传输到目标
+测试机上。
+
+\paragraph{LatencyTester}
+该类以及其子类实现了各种不同的测试。比如单层算子测试会生成对应硬件的模型并传送到测试机上进行测试。
+某些需要额外处理的硬件测试可以通过扩展该类的子类完成额外的工作。该类会调用LatencyEvaluator
+完成延时数据的获取。
+
+\paragraph{LatencyEvaluator}
+实现了在不同硬件平台上的延时数据测量。不同的硬件要求使用不同的推理框架，该类利用多态
+特性，提供了统一的接口测试在不同的硬件上推理模型的延时。该类支持编译未经训练的
+TensorFlow计算图到其他各种硬件模型。
+
+\paragraph{Connection}
+用于连接多样化的目标测试机，使得存放测试代码的宿主机可以通过统一的接口进行访问远程的测试机器。
+比如Edge TPU开发板需要配置在Debian的环境，而宿主机需要通过SSH连接传输数据；而Arm CPU和
+Adreno GPU上的测试需要通过ADB连接手机进行测试。
+
+\paragraph{Sampler}
+用于生成测试的集合。该类提供给AccuracyTester和LatencyTester以需要测试的数据点，比如ImageNet
+模型的输入输出节点，或者需要测量的算子、单元的参数信息。
+
 \subsection{可行性分析}
-针对多种不同的硬件，开题报告都预先做了一些前置性、探索性的基准测试和分析，判断理论与实际之间的差距是否可以
-并值得分析。在这里我们把它们分成几大类：向量化的架构（Hexagon DSP，Movidius计算棒）、
+针对多种不同的硬件，开题报告都预先做了一些前置性、探索性的基准测试和分析。
+在这里我们把它们分成几大类：向量化的架构（Hexagon DSP，Movidius计算棒）、
 通用处理器（Arm CPU）、SIMT（Same Instruction Multiple Threads）架构（Adreno GPU）、NPU（RK1808计算棒）。
+经过分析，我们认为理论复杂度和实机延时之间的差距是非平凡的，值得深入研究和分析。
 
 \subsubsection{向量化硬件架构的测试与特性分析}
 在Hexagon DSP上，首先我们测量了卷积算子在各个不同的参数下的延时。
