@@ -10,12 +10,10 @@ script           export-ignore
 .gitattributes   export-ignore
 docs/_config.yml export-ignore
 docs/index.md    export-ignore
-
 # Text FILES
 *.tex   text eol=lf
 *.bib   text eol=lf
 *.md    text eol=lf
-
 ## GRAPHICS
 *.ai   binary
 *.bmp  binary
@@ -38,3 +36,4 @@ docs/index.md    export-ignore
 *.tiff binary
 *.wbmp binary
 *.webp binary
+figure filter=lfs diff=lfs merge=lfs -text
