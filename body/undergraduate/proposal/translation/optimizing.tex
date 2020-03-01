@@ -13,9 +13,9 @@ TVM利用一种计算图表示来应用高级优化：一个节点表示在张�
 算子融合将多个算子组合成一个内核，而不是在运行时将中间结果保存在内存中。这种优化可以大大减少执行时间，
 尤其是在GPU和专用加速器中。具体来说，我们把图算子分成四类：
 \begin{enumerate*}
-    \item Injective（一对一映射，比如加法），
-    \item Reduction（比如求和），
-    \item Complex-Out-Fusable（可以把一对一映射算子融合到输出，比如二维卷积），
+    \item Injective（一对一映射，比如加法）；
+    \item Reduction（比如求和）；
+    \item Complex-Out-Fusable（可以把一对一映射算子融合到输出，比如二维卷积）；
     \item Opaque（无法被融合的，比如排序算子）。
 \end{enumerate*}
 我们提供了融合这些算子的通用规则，如下所示：多个Injective算子可以被合并成一个Injective算子。
