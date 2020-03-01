@@ -1,0 +1,32 @@
+\section{概览}
+本节通过一个例子来介绍TVM的各个组成部分。图 总结了TVM中的执行步骤以及在本文的对应章节。
+本系统首先从现有框架中获取模型作为输入，然后将其转换为计算图表示形式。然后，它执行高层次数据流重写以生成优化的计算图。
+算子级优化模块为该计算图中的每个融合算子生成高效的代码。算子用声明式的张量表达语言指定；执行细节未指定。
+TVM为特定硬件的算子提供了可能的优化代码集合。因为优化空间很大，所以我们使用基于机器学习的代价模型
+来找到优化的算子。最后，系统将生成的代码打包到可部署模块中。
+
+\paragraph{终端用户示例}
+仅仅用几行代码，用户就可以从现有的机器学习框架中获取模型并通过调用TVM接口来获取可部署的模块：
+
+\begin{lstlisting}[language={Python}]
+import tvm as t
+# Use keras framework as example, import model
+graph, params = t.frontend.from_keras(keras_model)
+target = t.target.cuda()
+graph, lib, params = t.compiler.build(graph, target, params) 
+\end{lstlisting}
+
+该编译过的运行时模块包含三个组件：最终优化的计算图（graph），生成的算子（lib）和模块参数（params）。
+然后这些组件可以被用于将模型部署到目标后端：
+
+\begin{lstlisting}[language={Python}]
+import tvm.runtime as t
+module = runtime.create(graph, lib, t.cuda(0))
+module.set_input(**params)
+module.run(data=data_array)
+output = tvm.nd.empty(out_shape, ctx=t.cuda(0))
+module.get_output(0, output)
+\end{lstlisting}
+
+TVM支持用多种语言，比如C++、Java和Python来部署后端。本文的其余部分描述了TVM的架构
+以及程序员如何扩展它以支持新的硬件后端。
