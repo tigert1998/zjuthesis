@@ -24,15 +24,31 @@ C = t.compute((m, n), lambda y, x:
 我们采用了Halide中解耦计算/调度的思想，使用调度来表示从张量表达式到底层代码的过程。
 对同一个函数，存在许多合法的调度。
 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.9\linewidth]{tvm/schedule_transform}
+    \caption{\label{fig:schedule transform}在特定加速器上优化矩阵乘法的调度转换示例。}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.9\linewidth]{tvm/code_gen}
+    \caption{\label{fig:code gen}TVM调度降低（Lowering）和代码生成过程。
+    这张表展示了已有的Halide和新的TVM调度原语，这些原语被用来为CPU、GPU和其他加速器后端优化调度。
+    张量化对加速器来说是重要的，但它也可以用来优化CPU和GPU。
+    特殊的内存作用域使得GPU上的内存重用变为可能，它也支持在特殊加速器上显式片上内存管理。
+    延时隐藏是专为类TPU加速器设计的优化。}
+\end{figure}
+
 我们通过逐步应用保持等效性的基本转换（调度原语）来构建调度。
-图 显示了在专用加速器上调度矩阵乘法的示例。
+图\ref{fig:schedule transform}显示了在专用加速器上调度矩阵乘法的示例。
 TVM内部在应用基本转换时会使用数据结构来跟踪循环结构和其他信息。
 然后，这些信息可以帮助为给定的最终调度生成底层代码。
 
 我们的张量表达式继承自Halide，Darkroom和TACO。
 它的增强功能主要包括对下面讨论的对新调度优化的支持。
 为了在许多后端上实现高性能，我们必须支持足够的调度原语，以涵盖不同硬件后端上的各种优化。
-图 总结了算子的代码生成过程和TVM支持的调度原语。
+图\ref{fig:code gen}总结了算子的代码生成过程和TVM支持的调度原语。
 我们重用Halide中有用的原语和低层次循环AST，并引入新的原语来优化GPU和加速器性能。
 新的原语是实现最佳GPU性能所必需的，并且对于硬件加速器至关重要。
 CPU，GPU，类TPU的加速器是深度学习的三种重要的硬件类型。
@@ -72,7 +88,14 @@ for thread_group (by, bx) in cross(64, 64):
                     C[yo*8+yi][xo*8+xi] = CL[yi][xi] 
 \end{lstlisting}
 
-图 演示了此优化的作用。
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.9\linewidth]{tvm/coop_shared_mem}
+    \caption{\label{fig:coop shared mem}在矩阵乘法工作负载上TVM不开启和开启协作共享内存读取的性能比较。
+    该测试在英伟达Titan X上进行。}
+\end{figure}
+
+图\ref{fig:coop shared mem}演示了此优化的作用。
 我们将内存作用域的概念引入调度空间，以便一个计算阶段（代码中的AS和BS）可以被标记成共享的。
 如果没有显式内存作用域，那么自动内存作用域推断会将计算阶段标记为线程本地的。
 共享任务必须计算组中所有工作线程的依赖关系。
@@ -124,19 +147,41 @@ gemm8x8 = t.decl_tensor_intrin(y.op, gemm_intrin_lower)
 根据目标硬件后端，它需要不同的策略。
 在CPU上，内存延迟隐藏是通过同时多线程或硬件预取隐式实现的。
 而GPU上的内存延迟隐藏的实现依赖于线程束的快速上下文切换。
-相比之下，专用的深度学习加速器（例如TPU）通常倾向于使用解耦访问控制（DAE）架构的精益控制，
+相比之下，专用的深度学习加速器（例如TPU）通常倾向于使用访问控制解耦（DAE）架构的精益控制，
 并且将细粒度同步的问题交给软件处理。
 
-图 显示了减少延时的DAE硬件的流水线。
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.9\linewidth]{tvm/dae}
+    \caption{\label{fig:dae}访问控制解耦通过允许内存和计算重叠隐藏了大部分内存访问延时。
+    执行的正确性是通过底层同步来保证的，同步是以依赖项进出队操作的形式进行的，编译器会把这些操作插入到指令流中。}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{tvm/virtual_thread_lowering}
+    \caption{\label{fig:virtual thread lowering}TVM的虚拟线程降低把虚拟的线程并行程序转换成单指令流；
+    该指令流包括了显式的底层同步，这样的同步使得硬件可以通过解析指令流来恢复流水线的并行性，达到隐藏内存访问延时的目的。}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.9\linewidth]{tvm/roofline}
+    \caption{\label{fig:roofline}一个FPGA深度学习加速器推理ResNet的Roofline性能图。
+    通过使用TVM提供的延时隐藏，基准测试的性能将更加接近Roofline，这展示了更高的计算访存效率。}
+\end{figure}
+
+图\ref{fig:dae}显示了减少延时的DAE硬件的流水线。
 与单片硬件设计相比，流水线可以隐藏大多数内存访问开销，几乎可以充分利用计算资源。
 为了实现更高的利用率，指令流必须用细粒度的同步操作扩展。
 没有它们，依赖性就不能被添加，错误的执行就会发生。
-因此，DAE硬件流水线需要在流水线阶段之间进行细粒度的依赖入队/出队操作，以确保正确执行，如图 的指令流所示。
+因此，DAE硬件流水线需要在流水线阶段之间进行细粒度的依赖入队/出队操作，以确保正确执行，
+如图\ref{fig:dae}的指令流所示。
 
 对需要显式底层同步的DAE加速器进行编程是困难的。
 为了减轻编程负担，我们引入了虚拟线程调度原语，它使程序员可以指定高层次数据并行程序，
 就像它们在支持多线程的硬件后端一样。
-然后，TVM自动将程序降低为具有底层显式同步的单个指令流，如图 所示。
+然后，TVM自动将程序降低为具有底层显式同步的单个指令流，如图\ref{fig:virtual thread lowering}所示。
 该算法从高层次的多线程程序调度开始，插入必要的底层同步操作以确保每个线程被正确地执行。
 接下来，它将所有虚拟线程的操作交织到单个指令流中。
 最后，硬件恢复由指令流中的底层同步操作决定的可用流水线并行性。
@@ -145,6 +190,7 @@ gemm8x8 = t.decl_tensor_intrin(y.op, gemm_intrin_lower)
 现在，我们演示了在FPGA加速器上隐藏延迟的有效性。
 我们在加速器上运行ResNet的每一层，并使用TVM生成两个调度：一个隐藏了延迟，另一个没有。
 带有延迟隐藏的调度将程序用虚拟线程并行化，以激发流水线并行性，从而隐藏内存访问延迟。
-结果如图 所示。屋顶线性能图可以可视化给定系统在不同基准测试中使用计算和内存资源的程度。
+结果如图\ref{fig:roofline}所示。
+Roofline性能图可以可视化给定系统在不同基准测试中使用计算和内存资源的程度。
 总体而言，延迟隐藏提高了所有ResNet算子上的性能。
 峰值计算利用率从无延迟隐藏的70\%增加到有延迟隐藏的88\%。
