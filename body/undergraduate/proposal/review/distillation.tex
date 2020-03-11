@@ -1,4 +1,6 @@
 \section{知识蒸馏}
+知识蒸馏是一种通过训练小模型来模仿预训练过的大模型的行为，来达到压缩模型目的的方法。
+
 最早的利用知识转移来压缩模型的方法可以追溯到\citeauthor{buciluǎ2006model}提出的Model Compression\cite{buciluǎ2006model}。
 该工作用原大模型生成的伪数据标签训练了另一个更浅的模型，并且重现了大模型的输出结果，达到了压缩模型的效果。
 之后\citeauthor{hinton2015distilling}在\parencite{hinton2015distilling}中将基于知识蒸馏的压缩方法发扬光大。
