@@ -5,7 +5,7 @@
 例如说Vgg-16\cite{simonyan2014very}包含了138兆的参数；
 Bert-Base\cite{devlin2018bert}则包含了110兆的参数，32位浮点模型就要占据按GB计的存储空间。
 这些模型也在特定的任务上卓有成效：
-AlexNet\cite{krizhevsky2012imagenet}将2012 ImageNet图片分类竞赛的Top-5错误率从28.2\%降低
+AlexNet\cite{krizhevsky2012imagenet}将2012 ImageNet\cite{deng2009imagenet}图片分类竞赛的Top-5错误率从28.2\%降低
 到17.0\%；GPT-2\cite{radford2019language}在WikiText等多个数据集上都刷新了成绩标杆。
 
 当神经网络的层数与算子数越多，降低它们的参数量和计算复杂度就愈发重要，特别是在一些延时敏感的场景下，
@@ -15,7 +15,8 @@ AlexNet\cite{krizhevsky2012imagenet}将2012 ImageNet图片分类竞赛的Top-5�
 服务器的维护成本。
 在这样的前提下，在硬件资源受限的边缘端部署神经网络就变成了富有机遇与挑战的研究话题。
 高效的神经网络设计将在这样的场景下发挥巨大的作用。
-比如Inception V4使用了$2.46\times 10^{10}$的浮点操作数，在高通骁龙855 SoC处理器上推理要花费715毫秒；
+比如Inception V4\cite{szegedy2017inception}使用了$2.46\times 10^{10}$的浮点操作数，
+在高通骁龙855 SoC处理器上推理要花费715毫秒；
 而去掉了许多冗余计算量的MobileNet V2\cite{sandler2018mobilenetv2}
 在$6.0\times 10^8$浮点操作数和同硬件49毫秒延时的情况下，ImageNet测试集精度达到了仅低10\%的效果。
 再比如TensorFlow Lite提供的8-bit量化在MobileNet V2上可以达到在精度仅低0.6\%的情况下，
