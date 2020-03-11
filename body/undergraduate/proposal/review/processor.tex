@@ -1,0 +1,31 @@
+\section{边缘端神经网络推理设备}
+本节简要介绍了一些主流的边缘端神经网络推理设备，和相关的基准测试的研究。
+
+\paragraph{移动端CPU/GPU}
+移动端CPU和GPU通常集成在SoC上出现。
+以安卓端的生态为例，常见的SoC有高通骁龙、华为麒麟系列等。
+麒麟SoC搭载了公版Arm的Cortex CPU和Mali GPU；
+而骁龙上搭载的Adreno GPU来自高通收购的ATI移动GPU部门Imageon。
+Arm CPU的一个特点是具有称为NEON的SIMD加速单元，可以用于图像处理和AI应用加速。
+而Mali和Adreno GPU都属于SIMT架构，每个GPU线程可以并行而独立地处理数据和控制流。
+
+\paragraph{Hexagon DSP}
+Hexagon DSP是高通处理器的关键组件。
+在信号处理和多媒体应用程序上，Hexagon DSP提供了更有竞争力的性能和电源效率。
+它具有硬件多线程，采用了可变长度指令和超长指令字（VLIW）的处理器体系结构。
+现代Hexagon DSP使用优先级调度策略以更好地隐藏延时。
+
+\paragraph{Edge TPU}
+Google Edge TPU是采用脉动阵列架构的矩阵乘法器。
+一个脉动阵列往往由多个同构的处理单元组成，数据在处理单元之间流动。
+每个处理单元的设计相对简单，系统通过实现大量处理单元并行来提高运算的效率。
+TPU采用这样的设计，一方面是可以大幅度提高并行度，另一方面是可以平衡运算和IO。
+
+\subsection{针对边缘端处理器的基准测试}
+许多不同的工作都已经以不同目的对各种边缘端处理器的AI处理能力进行过基准测试。
+BenchIP\cite{tao2017benchip}和DeepBench\cite{deepbench}在一个基准测试套件下，测试推理AI任务的硬件设备的性能。
+前者的工作将测试分为Macro Benchmark和Mirco Benchmark。
+其中，Macro Benchmark测试了常见的神经网络模型，而Micro Benchmark测试了由常见的基本算子构成的单层网络。
+这样做旨在在覆盖常见的使用场景的前提下，也帮助设计者利用特殊的配置数据探索新的研究方向。
+宏观测试比较了网络模型之间的相似性和相关度；
+微观测试在不同的硬件上以不同的配置测试了单层网络，文章也分析了不同算子的数据重用距离以分析算子的数据局部性。
