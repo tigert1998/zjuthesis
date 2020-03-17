@@ -7,11 +7,12 @@
 
 为了完成这样的目标，产研两界花费了巨大的精力在底层硬件和上层软件上，包括神经网络设计。
 对硬件来说，除了CPU和GPU，工业界设计了多样的低功耗高算力的边缘神经网络处理器，比如
-Google Edge TPU（张量处理单元）、Intel Movidius Myrid X VPU（视觉处理单元）
-和福州瑞芯微开发的RK1808 NPU（神经处理单元）等。
+Google Edge TPU（张量处理单元）\cite{edgetpu}、
+Intel Movidius Myrid X VPU（视觉处理单元）\cite{myriad}
+和福州瑞芯微开发的RK1808 NPU（神经处理单元）\cite{rk3399pro}等。
 在软件层面上，有来自Google的广泛使用的开源TensorFlow Lite，Facebook推广的PyTorch Mobile，
 和其他诸多硬件厂商的闭源推理引擎。
-就比如高通为在骁龙SoC上推理神经网络开发的SNPE（高通神经处理引擎）。
+就比如高通为在骁龙SoC上推理神经网络开发的SNPE（高通神经处理引擎）\cite{snpe}。
 在神经网络层面上，研究员们已经提出了许多神经网络加速技术，来减少神经网络模型的计算复杂度使其能在移动端推理。
 
 \subsection{存在的问题与挑战}
@@ -21,12 +22,14 @@ Google Edge TPU（张量处理单元）、Intel Movidius Myrid X VPU（视觉处
 其中一点是总计算操作数，比如FLOPs（浮点操作数）是延时的代理衡量标准。
 有许多工作的目标在降低这个指标以获得在精度和延时之间的平衡。
 然而，降低的计算量不总是意味着降低的延时。
-就比如在FLOPs指标上比MobileNet V2高88\%的MobileNet V1在Edge TPU上具有比V2模型更低的延时。
+就比如在FLOPs指标上比MobileNet V2\cite{sandler2018mobilenetv2}高88\%的
+MobileNet V1\cite{howard2017mobilenets}在Edge TPU上具有比V2模型更低的延时。
 另外一点不合理认知是在一个处理器上能高效运行的模型也能在另一种处理器上具有较低延时。
-根据我们的测试，在高通855 SoC处理器上比MobileNet V3 Large相较于V2模型有1.26的加速比，
-然而在RK1808计算棒上，前者却比后者慢117\%。
+根据我们的测试，在高通855 SoC处理器上比MobileNet V3 Large\cite{howard2019searching}
+相较于V2模型有1.26的加速比，然而在RK1808计算棒的半精度推理上，前者却比后者慢44.2\%。
 
-一些神经网络设计的工作注意到了这些不合理之处，并使用真实的在硬件上测量出的延时，在全搜索空间上搜索高效的网络结构。
+一些神经网络设计的工作\cite{tan2019mnasnet,dai2019chamnet,yang2018netadapt}
+注意到了这些不合理之处，并使用真实的在硬件上测量出的延时，在全搜索空间上搜索高效的网络结构。
 然而考虑到算子、单元的类型和网络中每层的超参数配置构成了很大的搜索空间，
 在每个硬件上对每个模型测量变成了极其困难的事情。
 那么，如何填补在网络设计和硬件之间的差距，变成了一个关键问题。

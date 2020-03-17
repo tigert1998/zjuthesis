@@ -25,7 +25,10 @@
 \paragraph{多种算子或模块测试}
 我们选择了卷积、逐通道卷积、扩张卷积（Dilated Convolution）、分组卷积（Grouped Convolution）、加法、
 连接（Concatenation）、全局池化、全连接、打乱顺序（Shuffle）、混合卷积（Mix Convolution\cite{tan2019mixconv}）
-作为待测的算子。另外，我们选择了MobileNet V1、MobileNet V2、ShuffleNet V1、ShuffleNet V2、ResNet、DenseNet
+作为待测的算子。另外，我们选择了
+MobileNet V1\cite{howard2017mobilenets}、MobileNet V2\cite{sandler2018mobilenetv2}、
+ShuffleNet V1\cite{zhang2018shufflenet}、ShuffleNet V2\cite{ma2018shufflenet}、
+ResNet\cite{he2016deep}、DenseNet\cite{huang2017densely}
 这些网络的基本构成模块作为模块的测试。
 
 对于每个算子或模块，我们选择了输入特征图尺寸$\in \{224,112,56,28,14,7\}$，
@@ -33,8 +36,8 @@
 
 \paragraph{多种模型结合不同量化精度测试}
 在该测试中我们选择了各种SOTA模型，包括了手工设计的模型和经过AutoML生成的模型，
-比如MobileNet系列、ShuffleNet系列、FBNet、ProxylessNas等。我们评估了这些模型在不同硬件
-上用不同的推理引擎和不同的量化方法得到的在ImageNet\cite{deng2009imagenet}验证集上
+比如MobileNet系列、ShuffleNet系列、FBNet\cite{wu2019fbnet}、ProxylessNas\cite{cai2018proxylessnas}等。
+我们评估了这些模型在不同硬件上用不同的推理引擎和不同的量化方法得到的在ImageNet\cite{deng2009imagenet}验证集上
 的精度和性能数据。
 
 \subsection{硬件测量方法}
