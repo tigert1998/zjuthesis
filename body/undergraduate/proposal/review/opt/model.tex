@@ -1,8 +1,8 @@
-\section{轻量化模型设计}
+\subsection{轻量化模型设计}
 轻量化模型设计指通过设计紧凑而高效的神经网络结构来达到平衡模型推理时间和精度的方法。
 这节将设计方法归为专家手工设计和通过神经网络架构搜索（NAS）自动设计两类。
 
-\subsection{手工设计的网络}
+\paragraph{手工设计的网络}
 SqueezeNet\cite{iandola2016squeezenet}大量地使用带有压缩和扩展模块的$1\times 1$卷积，减少了参数数量。
 而最近的工作逐渐将重点从减少参数数量移到减少浮点操作数和实际测量的延迟。
 MobileNet V1\cite{howard2017mobilenets}使用了深度可分离卷积来显著提高网络的计算效率。
@@ -19,11 +19,11 @@ ShuffleNet V2\cite{ma2018shufflenet}提出了四种模型设计准测：
 这些指示了浮点操作数不能作为单一的指标来衡量模型的计算复杂度。
 轻量化模型设计应以实际的推理延时为目标而非代理测度如参数量和浮点操作数。
 
-\subsection{神经网络架构搜索}
+\paragraph{神经网络架构搜索}
 另一方面，基于神经架构搜索的方法表现也很出色。
 其中，强化学习和基于梯度的方法是两个主流的研究方向。
 NASNet\cite{zoph2018learning}，MNasNet\cite{tan2019mnasnet}利用
-RNN作为一个元控制器来控制候选网络的选择。
+循环神经网络作为一个元控制器来控制候选网络的选择。
 后者使用延时和精度的混合奖励来引导控制器采样模型。
 基于强化学习的模型设计方法通常需要大量的GPU算力，然而基于梯度的搜索方法，比如
 Darts\cite{liu2018darts}，ProxylessNAS\cite{cai2018proxylessnas}，FBNet\cite{wu2019fbnet}
