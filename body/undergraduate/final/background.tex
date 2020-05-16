@@ -50,3 +50,51 @@ SHAVE核心\cite{shave}混合RISC/DSP/GPU的架构。
 在2 W的功耗下，VPU可以达到1 TOPs/s的神经网络推理性能。
 
 \subsection{高效神经网络的设计与部署}
+
+\paragraph{神经网络设计}
+许多超参数包括网络结构，内核尺寸，输入/输出通道数，网络层数等都会影响神经网络的性能并使得设计空间更加庞大。
+其中，通道数的配置以及算子/模块结构对于在资源受限平台上部署模型是至关重要的。
+
+一个流行的启发式规则是``特征图边长减半，通道数加倍''。
+它首先被VGG\cite{simonyan2014very}引入，
+后来又被应用于许多其他的神经网络设计工作中，
+例如ResNet\cite{he2016deep}和MobileNet\cite{howard2017mobilenets, sandler2018mobilenetv2}系列。
+除了这种人为设计的启发式方法，许多基于剪枝和NAS（神经网络结构搜索）
+\cite{he2018amc, lee2019device, liu2019metapruning}的方法
+也提出了最优通道数的解法。
+
+近年CNN的工作\cite{he2016deep, ma2018shufflenet, sandler2018mobilenetv2}
+通常会设计一个高效的模块（todo），并在每一阶段中重复它。
+ResNet\cite{he2016deep}使用残差模块和短路连接来达到令人印象深刻的精度。
+DenseNet\cite{huang2017densely}通过添加更密集的层与层之间的全连接来改进ResNet。
+为了在资源有限的边缘设备部署上网络，MobileNetV1\cite{howard2017mobilenets}
+引入了深度可分离卷积以减少运算量。
+MobileNetV2\cite{sandler2018mobilenetv2}引入了倒置残差和线性瓶颈模块。
+ShuffleNetV1\cite{zhang2018shufflenet}使用了$1\times 1$组卷积和通道重排，
+在保持良好准确性的同时极大地减少了计算量。
+改进后的ShuffleNetV2\cite{ma2018shufflenet}去除了组卷积，
+并在分析了移动端CPU的效率后重新调整了模块。
+SENet\cite{hu2018squeeze}介绍了SE模块，该模块在占有极少计算量的基础上可以大幅度提高模型准确度。
+MobileNetV3\cite{howard2019searching}和EfficientNet\cite{tan2019efficientnet}
+集成了SE模块并提高了其效率。
+MixConv\cite{tan2019mixconv}也是一个高效的模块，
+它对特征图进行分组，并对不同组使用不同内核尺寸大小的逐通道卷积。
+
+这些工作反映了高效神经网络设计的两个趋势。
+首先是计算密集型的卷积被替换为其他访存密集型算子，例如通道重排。
+第二是新算子被引入以提高精确度。
+这些趋势可以有效地帮助提高CPU上的模型推理性能。
+但是，当下主要用于加速卷积的AI加速器几乎无法适应这些趋势，并可能产生性能问题（todo）。
+
+\paragraph{模型开发}
+当专家完成神经网络模型的设计后，模型需要经过额外的部署过程来在目标设备上推理。
+主流的神经网络开发框架（如TFLite）通常会执行以下三个主要步骤：
+\begin{enumerate*}
+    \item 将原始模型格式转换为当前部署框架的模型格式；
+    \item 优化计算图，制定模型的执行计划或生成目标设备代码。
+    其中最重要的图层次优化是算子融合。
+    它将相邻算子（通常是卷积和逐元素算子）的计算合并在一起，减少了中间结果的访存开销。
+    \item 将原始FP32模型量化到目标精度，比如INT8。
+    这往往需要在计算图中添加Quantize、Requantize、Dequantize等算子（如图\ref{fig:pipeline}）。
+    量化通常能减少模型大小和推理延时，但是往往也会造成精度损失。
+\end{enumerate*}
