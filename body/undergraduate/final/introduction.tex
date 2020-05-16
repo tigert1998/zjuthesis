@@ -1,6 +1,44 @@
 \cleardoublepage
 
-\section{绪论}
+\section{引言}
+许多边缘设备，如智能手机、相机、扬声器和传感器为神经网络技术提供了理想的实际使用场景，
+例如语音助手，智能安防和自动驾驶。
+与将数据发送到云端服务器相比，在端侧上的推理对于保护用户隐私，以及构建始终可用且响应迅速的AI至关重要。
+因此，将神经网络部署在端侧上的需求和动力是巨大的。
+
+近年来，端侧神经网络部署的整个技术栈都取得了巨大的进展，包括硬件、推理框架和高效的神经网络结构。
+其中在AI硬件上，不少传统科技公司或创业公司凭借他们的产品占据了一席之地，
+例如Google的Edge TPU\cite{edgetpu}，英特尔的Movidius VPU\cite{myriad}，Canaan的KPU\cite{k210}
+和寒武纪的MLU\cite{cambricon}。
+这是整个半导体领域第一次经历这种大规模的扩张和快速迭代。
+边缘端AI开发框架的发展也是迅速的，例如开源且被广泛使用的TensorFlow Lite（TFLite）\cite{tflite}
+和PyTorch Caffe2\cite{caffe2}，以及专用硬件供应商为其芯片产品提供的闭源推理框架等。
+例如，高通开发的用于骁龙SoC的SNPE（骁龙神经处理引擎）运行时\cite{snpe}。
+硬件和软件框架的多样性给神经网络算法设计带来了巨大的挑战。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.8\linewidth]{final/pipeline}
+    \caption{\label{fig:pipeline}标准的端侧神经网络算法部署流程}
+\end{figure}
+
+本质上，神经网络设计的重点是提高其精确度。
+如图\ref{fig:pipeline}所示，神经网络的设计空间涉及了许多维度。
+为了在边缘设备上高效推理神经网络，设计空间中也要加入为效率而考虑的约束。
+但是，人们对目前约束有一定的误解。
+就比如最常见的约束：计算操作数
+（OPs\footnote{因为不同AI芯片会采用不同的推理精度，所以本文使用OPs而不是FLOPs。
+这里OPs的定义和\cite{zhang2018shufflenet}一致，即乘加的数量。}）。
+许多工作只是旨在通过减少OPs来降低延时。
+不幸的是，较少的OPs并不直接意味着延时的减少，相反可能会损害模型的准确性。
+例如，我们的测量表明，在Edge TPU上，MobileNetV3（209MOPs）比MobileNetEdgeTPU（990 MOPs）慢，并且模型精确度更低。
+另一个误解是，一个高效的模型可以在每种设备都做到快速推理。
+同样，事实并非如此。
+根据我们的数据，MobileNetV3在ARM Cortex A76上的运行速度比MobileNetV2快25\%，
+但前者在Movidius VPU比后者慢71\%。
+
+某些神经网络设计的工作\cite{dai2019chamnet, tan2019mnasnet, yang2018netadapt}注意到了这些误解，
+并在设计过程中测量了目标硬件上的实际延迟作为优化目标。
 
 \subsection{背景}
 
