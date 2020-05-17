@@ -1,0 +1,24 @@
+\begin{table}[h]
+	\caption{测量的硬件及对应框架\footnotesize{\normalfont{$^*$ DFP：动态定点数；UINT：无符号整型。}}}
+	\label{tab:platform}
+	\scriptsize
+	\begin{tabular}{c|c|c|c|c|c}
+		\hline
+		\thead{处理器} & \thead{精度$^*$} & \thead{峰值性能} & \thead{框架} & \thead{设备} & \thead{缩写} \\
+		\hline
+		Cortex A76 CPU & FP32/INT8 & 23\,GOPs / core (FP32) & TFLite v2.1 & Mi9上的骁龙855 SoC & CPU \\
+		
+		Adreno 640 GPU & FP32/FP16 & 840\,GOPs (FP16) & TFLite v2.1 & Mi9上的骁龙855 SoC & GPU \\
+		
+		Hexagon 685 DSP & INT8 & 256\,GOPs & SNPE v1.30~\cite{snpe} & Pixel 3XL上的骁龙845 SoC & DSP \\
+		
+		\makecell{Movidius Myrid X\\VPU} & FP16 & 5\,TOPs & \makecell{OpenVINO\\2019 R5\cite{vino}} & 因特尔神经计算棒2 & VPU \\
+		
+		Edge TPU & INT8 & 4 TOPs & TFLite-based & Coral USB Accelerator & TPU \\
+		
+		Rockchip NPU & \makecell{FP16/DFP16\\DFP8/UINT8} & 3 TOPs (UINT8) & RKNN~\cite{rknn} v1.2.1 & RK3399Pro SoC & NPU\\
+		
+		Kendryte KPU & INT8 & 0.5 TOPs & NNCASE~\cite{nncase} & K210 SoC开发板 & KPU\\
+		\hline
+	\end{tabular}
+\end{table}

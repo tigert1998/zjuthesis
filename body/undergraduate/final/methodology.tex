@@ -8,13 +8,14 @@
 \label{suite}
 
 \inputbody{final/method_misc/block_pics}
+\inputbody{final/method_misc/suite_tab}
 
 \paragraph{通道数}
 如节\ref{nn design and deployment}所述，通道数对于边缘设备上的模型可用性至关重要。
 除了启发式的规则之外，基于剪枝和搜索的方法都广泛使用OPs作为通道数的一个硬约束，
 并假设较少的通道数（即较少的OPs）意味着更快的推理速度。
 但是真实设备上的推理延时是否符合这样的假设呢？
-为了回答这个问题，表todo所列的基准测试套件内包含通道数的类别。
+为了回答这个问题，表\ref{tab:suite}所列的基准测试套件内包含通道数的类别。
 
 此类别主要关注卷积（Conv）和逐通道卷积（DWConv）算子，因为它们占据了CNN推理的大部分延时。
 它包含三种配置：
@@ -38,13 +39,15 @@ HardSwish用近似的方法来降低Swish的计算复杂性。
 （如图\ref{fig:blocks}所示）。
 套件还包含不同的特征图尺寸和内核尺寸以进行综合分析。
 
+\inputbody{final/method_misc/ops_mac_tab}
+
 影响神经网络硬件行为的一个重要因素是
 算子的数据重用率（Data Reuse Rate），即计算密度（Operational Intensity）。
-表todo显示了典型算子具有的OPs和内存访问开销（Memory Access Cost）的表达式。
+表\ref{tab:calculation}显示了典型算子具有的OPs和内存访问开销（Memory Access Cost）的表达式。
 显然，卷积是最计算密集的算子，因而其性能往往受硬件计算带宽的限制。
-对于分组卷积，因为其特征图被按组（$G$）划分计算以减少OPs，所以其数据重用率较低。
-DWConv可以看作$G = C_{in}$的分组卷积。
-它的数据重用率常是Conv的几十分之一。
+对于分组卷积（Group Conv），因为其特征图被按组（$G$）划分计算以减少OPs，所以其数据重用率较低。
+逐通道卷积（DWConv）可以看作$G = C_{in}$的分组卷积。
+它的数据重用率常是普通卷积的几十分之一。
 逐元素算子和激活函数对张量的每个元素都执行例如加或乘的操作。
 他们是最内存密集型的算子，其性能对AI加速器的内存带宽非常敏感。
 
@@ -66,7 +69,7 @@ DWConv可以看作$G = C_{in}$的分组卷积。
 这些模型具有不同的计算、访存复杂度。
 它们的操作数从140 MOPs（ShuffleNetV1）到6.55 GOPs（ResNetV2）不等。
 模型大小从9 MB（ShuffleNetV2）到99 MB（ResNetV2）不等。
-基准测试包括了各硬件支持的所有精度，例如AI加速器上的FP16和INT8（表todo），
+基准测试包括了各硬件支持的所有精度，例如AI加速器上的FP16和INT8（表\ref{tab:platform}），
 来评估量化算法对各模型加速比和准确度的影响。
 
 \subsection{测量方法}
@@ -75,7 +78,10 @@ DWConv可以看作$G = C_{in}$的分组卷积。
 本节介绍了测试平台，设置和以及延时/准确度的评估方法。
 
 \paragraph{处理器和框架}
-表todo列出了本文评估的处理器和对应的部署框架。
+
+\inputbody{final/method_misc/hardware_tab}
+
+表\ref{tab:platform}列出了本文评估的处理器和对应的部署框架。
 表中列出的精度是处理器与其软件框架都支持的精度。
 硬件峰值性能一栏是制造商宣称的每秒操作数量。
 因为缺少官方数据，Adreno GPU的峰值性能是由性能测试工具\cite{clpeak}得到的。

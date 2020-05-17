@@ -1,0 +1,32 @@
+\begin{table*}[!htbp]
+	\centering
+	\caption{\emph{\sysname}基准测试套装}
+	\label{tab:suite}
+	\fontsize{8.8}{8.8} \selectfont
+	\begin{tabular}{|c|c|c|c|c|c|c|c|}
+		\hline
+		& \multicolumn{2}{c|}{{名字}} & \thead{内核尺寸\\（$K$）} & \thead{步长\\（$S$）}& \thead{输入\\$H\times W$\\（$H=W$）} & \thead{输入通道数\\（$C_{in}$）} & \thead{输出通道数\\（$C_{out}$）} \\
+		\hline
+		{\footnotesize{通道}} & \multicolumn{2}{c|}{\makecell{Conv, DWConv}} & 1,3,5,7 & 1,2
+		& \makecell{$224$,$112$,$56$ \\$28$, $14$,$7$} & \numrange{3}{1000}
+		& \numrange{3}{1000}  \\   
+		
+		\hline
+		\multirow{6}{*}{{算子}}	& \multicolumn{2}{c|}{Fully Connected} & - & -& - & 1024,1280 & 1000 \\
+		\cline{2-8}
+		&\multirow{2}{*}{{\footnotesize{逐元素算子}}} & Pooling & 7 & -&\multirow{5}{*}{\centering	\makecell{\\\\$224$,$112$,$56$ \\ $28$,$14$,$7$,$3$}} & \multirow{5}{*}{ \makecell{\\\\ 32,64,96\\128,160,240\\256,320,480\\512,640}}& \multirow{5}{*}{ \makecell{\\\\32,64,96\\128,160,240\\256,320,480\\512,640}}  \\
+		\cline{3-5}
+		& & \makecell{Add, Concat, Multiply, Shuffle} & - & -& &&  \\
+		\cline{2-5}
+		& {\footnotesize{激活函数}} 
+		& \makecell{ReLU, ReLU6, \\Sigmoid, HardSwish, Swish} & -& -&& &   \\
+		\cline{2-5}
+		
+		& {\footnotesize{卷积}} 
+		& \makecell{Conv, DWConv\\  Dilated, Group, MixConv}  & 1,3,5,7 & 1,2	&  & 	& \\
+		
+		\cline{1-5}
+		{模块} & \multicolumn{2}{c|}{\makecell{MobileNetV1, ShuffleNetV1/V2, DenseNet \\ MobileNetV2 with/without SE, ResNetV1}}  	& 3,5,7 & 1,2& &	&\\
+		\hline
+	\end{tabular}
+\end{table*}

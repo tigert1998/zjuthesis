@@ -1,0 +1,15 @@
+\begin{table}
+	\centering
+	\caption{算子的计算和访存量}
+	\label{tab:calculation}
+	\fontsize{8}{8}
+	\begin{tabular}{|c|c|c|c|c|}
+		\hline
+		& Conv & Group Conv & DWConv & Ele. \\
+		\hline
+		计算量 & $H^2C_{in}C_{out}K^2$ & $H^2C_{in}C_{out}K^2/G$ & $H^2C_{in}K^2$ & $nH^2C_{in}$ \\
+		\hline
+		访存量 & \makecell{$H^2C_{in}+H^2C_{out}$\\$+K^2C_{in}C_{out}$} & \makecell{$H^2C_{in}+H^2C_{out}$\\$+K^2C_{in}C_{out}/G$} & \makecell{$2H^2C_{in}$\\$+K^2C_{in}$} & \makecell{$H^2C_{in}$} \\
+	    \hline
+	\end{tabular}
+\end{table}	
