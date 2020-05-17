@@ -22,7 +22,7 @@
     \caption{\label{fig:pipeline}标准的端侧神经网络算法部署流程}
 \end{figure}
 
-本质上，神经网络设计的重点是提高其精确度。
+本质上，神经网络设计的重点是提高其准确率。
 如图\ref{fig:pipeline}所示，神经网络的设计空间涉及了许多维度。
 为了在边缘设备上高效推理神经网络，设计空间中也要加入为效率而考虑的约束。
 但是，人们对目前约束有一定的误解。
@@ -31,7 +31,7 @@
 这里OPs的定义和\cite{zhang2018shufflenet}一致，即乘加的数量。}）。
 许多工作只是旨在通过减少OPs来降低延时。
 不幸的是，较少的OPs并不直接意味着延时的减少，相反可能会损害模型的准确性。
-例如，我们的测量表明，在Edge TPU上，MobileNetV3（209MOPs）比MobileNetEdgeTPU（990 MOPs）慢，并且模型精确度更低。
+例如，我们的测量表明，在Edge TPU上，MobileNetV3（209MOPs）比MobileNetEdgeTPU（990 MOPs）慢，并且模型准确率更低。
 另一个误解是，一个高效的模型可以在每种设备都做到快速推理。
 同样，事实并非如此。
 根据我们的数据，MobileNetV3在ARM Cortex A76上的运行速度比MobileNetV2快25\%，
