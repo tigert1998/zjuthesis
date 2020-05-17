@@ -7,6 +7,8 @@
 \subsection{基准测试套件}
 \label{suite}
 
+\inputbody{final/method_misc/block_pics}
+
 \paragraph{通道数}
 如节\ref{nn design and deployment}所述，通道数对于边缘设备上的模型可用性至关重要。
 除了启发式的规则之外，基于剪枝和搜索的方法都广泛使用OPs作为通道数的一个硬约束，
@@ -32,7 +34,8 @@
 ReLU、ReLU6和Sigmoid是传统的激活函数。
 近年来Swish\cite{ramachandran2017swish}也被用于代替ReLU以提高准确率。
 HardSwish用近似的方法来降低Swish的计算复杂性。
-在模块方面，套件包括了节\ref{nn design and deployment}讨论的来自SOTA模型的有代表性的模块（如图todo所示）。
+在模块方面，套件包括了节\ref{nn design and deployment}讨论的来自SOTA模型的有代表性的模块
+（如图\ref{fig:blocks}所示）。
 套件还包含不同的特征图尺寸和内核尺寸以进行综合分析。
 
 影响神经网络硬件行为的一个重要因素是

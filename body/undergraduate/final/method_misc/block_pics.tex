@@ -1,0 +1,44 @@
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.1696\linewidth}
+    	\centering\includegraphics[width=\textwidth]{final/blocks/resnetv1}
+    	\caption{\label{fig:blocks:resnet}ResNetV1}
+	\end{subfigure}
+	\hspace{2.7em}
+    \begin{subfigure}[b]{0.1696\linewidth}
+    	\centering\includegraphics[width=\textwidth]{final/blocks/densenet}
+    	\caption{\label{fig:blocks:densenet}DenseNet}
+	\end{subfigure}
+	\hspace{2.7em}
+	\begin{subfigure}[b]{0.1808\linewidth}
+		\centering\includegraphics[width=\textwidth]{final/blocks/mobilenetv1}
+		\caption{\label{fig:blocks:mobilenetv1}MobileNetV1}
+	\end{subfigure}
+	\hspace{2.7em}
+	\begin{subfigure}[b]{0.2\linewidth}
+		\centering\includegraphics[width=\textwidth]{final/blocks/mobilenetv2}
+		\caption{\label{fig:blocks:mobilenetv2}\small{MobileNetV2$^+$}}
+	\end{subfigure}
+	\hspace{2.7em}
+	\begin{subfigure}[b]{0.184\linewidth}
+		\centering\includegraphics[width=\textwidth]{final/blocks/shufflenetv1}
+		\caption{\label{fig:blocks:shufflenetv1}ShuffleNetV1}
+	\end{subfigure}
+	\hspace{2.7em}
+	\begin{subfigure}[b]{0.1872\linewidth}
+		\centering\includegraphics[width=\textwidth]{final/blocks/shufflenetv2}
+		\caption{\label{fig:blocks:shufflenetv2}ShuffleNetV2}
+	\end{subfigure}
+	\hspace{2.7em}
+	\begin{subfigure}[b]{0.1808\linewidth}
+		\centering\includegraphics[width=\textwidth]{final/blocks/se}
+		\caption{\label{fig:blocks:se}SE}
+	\end{subfigure}
+    \caption{
+        SOTA CNN模型中的有代表性的模块。
+        \footnotesize{\normalfont{$^+$：对于MobileNetV2+SE模块，
+        我们采用\parencite{howard2019searching}中的构建方法，
+		将SE插在逐通道卷积和最后的$1\times 1$卷积之间。}}
+	}
+	\label{fig:blocks}
+\end{figure}
