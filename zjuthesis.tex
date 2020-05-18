@@ -29,6 +29,18 @@
 
 \newcommand{\sysname}{NN2Edge}
 
+\makeatletter
+\newcommand{\phantomlabel}[2]{
+    \protected@write\@auxout{}{
+        \string\newlabel{#2}{
+            {\@currentlabel#1}{\thepage}
+            {\@currentlabel#1}{#2}{}
+        }
+    }
+    \hypertarget{#2}{}
+}
+\makeatother
+
 \newcommand{\inputundergraduate}
 {
     \ifthenelse{\equal{\Period}{final}}

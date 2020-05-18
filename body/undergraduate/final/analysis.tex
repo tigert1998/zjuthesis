@@ -1,3 +1,9 @@
+\newcounter{finding}[section]
+\newenvironment{finding}[1][]{
+    \refstepcounter{finding}\par
+    \medskip\textbf{发现\thefinding#1} 
+    \rmfamily}{\medskip}
+
 \section{硬件行为分析}
 \label{analysis}
 本节分析了七种处理器上的基准测试结果，并展示了神经网络与硬件行为的发现。
@@ -8,6 +14,18 @@
 
 \subsection{通道数}
 \label{analysis:channels}
+
+\inputbody{final/analysis_misc/conv_pics}
+
+通道数是对高效神经网络调优的重要参数。
+基本的一个直觉是更大的通道数意味着更多计算数，因此有着更长的推理时间。
+本节将展示通道数变化时真实的卷积延时响应。
+
+图\ref{fig:conv_cin_fixed}展示了在各个硬件上变化$C_{out}$导致的卷积延时变化（固定$C_{in}$和其他超参数）。
+
+\begin{finding}
+    除了KPU之外，卷积延时随着输出通道数以台阶的规律增长。
+\end{finding}
 
 \subsection{算子和模块}
 \label{analysis:op block}

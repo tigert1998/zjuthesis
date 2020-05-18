@@ -1,0 +1,33 @@
+\begin{figure}
+    \centering
+    \includegraphics[width=0.96\textwidth]{final/cpuconv}
+    \caption{TFLite ruy中的矩阵乘法实现。橙色标注了计算的基本模块。数据被扩展到了8的倍数。}
+    \label{fig:cpuconv}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{final/gpuconv}
+    \caption{TFLite OpenCL后端的卷积实现。虚线划分了工作组。橙色显示了输出张量中的一个元素涉及的计算区域。}
+    \label{fig:gpuconv}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.95\textwidth]{final/analysis/conv_cin_fixed}
+	\caption{
+        除了KPU之外，卷积延时随着$C_{out}$变化显示出了台阶的规律。
+        本图所用的配置是：
+        $H \times W=28 \times 28$, $C_{in}=320$, $K=3$, $S=1$。
+        X轴是$C_{out}$（为了更好地显示规律，不同的子图使用了不同的间隔），而Y轴是以毫秒记的延时。
+	}
+	\label{fig:conv_cin_fixed}
+	\phantomlabel{a}{fig:conv_cin_fixed:cpu}
+	\phantomlabel{b}{fig:conv_cin_fixed:gpu}
+	\phantomlabel{c}{fig:conv_cin_fixed:dsp}
+	\phantomlabel{d}{fig:conv_cin_fixed:vpu}
+	\phantomlabel{e}{fig:conv_cin_fixed:tpu}
+	\phantomlabel{f}{fig:conv_cin_fixed:npu}
+	\phantomlabel{g}{fig:conv_cin_fixed:kpu}
+	\label{conv_latency}
+\end{figure}
