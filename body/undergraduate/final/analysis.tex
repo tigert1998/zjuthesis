@@ -211,7 +211,7 @@ ShuffleNetV2模块在VPU和NPU上高延时的原因在于Shuffle（\ref{fig:bloc
 
 对于由分组卷积、逐通道卷积和通道重排算子组成的ShuffleNetV1模块，
 内核尺寸远比输入/输出张量尺寸小。
-因而总mac一直在成倍减少，其延迟也不断降低。
+因而总mac一直在成倍减少，其延时也不断降低。
 ShuffleNetV2模块用普通卷积代替了分组卷积，所以mac的减少量比ShuffleNetV1模块小。
 
 总的来说，MobileNetV1模块在前两层最快，
@@ -232,6 +232,20 @@ ShuffleNetV2模块用普通卷积代替了分组卷积，所以mac的减少量�
 \begin{finding}
     在AI加速器上，卷积（除TPU上的逐通道卷积）延时随内核尺寸增长的幅度相对CPU、GPU要小得多。
 \end{finding}
+
+当其他超参数（如$C_{in}$、$C_{out}$）固定时，
+卷积和逐通道卷积的计算复杂度、内核访存复杂度是$O(K^2)$。
+对于CPU和GPU上的卷积（如图\ref{fig:latency_with_ksize}a），
+其延时随内核尺寸的增长，快于OPs的增长。
+这是因为增加的数据量会提高缓存的容量失效率（Capacity Miss）（CPU上有2M的L3缓存）。
+另一个原因是，$1\times 1$卷积在目前的TFLite中的有着和其他内核尺寸不同的优化实现。
+相比之下，在其他AI加速器上，延时随内核大小的增长要小很多（尤其是$K=3$时的NPU和TPU）。
+这是合理的，因为这些加速器与其框架是主要为了加速卷积而设计的。
+例如，TPU具有用于内核数据预取的片上权重FIFO，
+而DSP的神经网络库针对每个内核大小有定制化的汇编优化。
+
+对于逐通道卷积来说，其延时增加看起来更加温和，
+特别是在DSP、VPU和NPU上（注意图中标注的相对于$K=3$的延时）。
 
 \subsubsection{不同硬件的激活函数延时}
 \label{analysis:op block:activation with hardware}

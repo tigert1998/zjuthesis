@@ -1,18 +1,18 @@
-\begin{figure}
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=0.96\textwidth]{final/cpuconv}
     \caption{TFLite ruy中的矩阵乘法实现。橙色标注了计算的基本模块。数据被扩展到了8的倍数。}
     \label{fig:cpuconv}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=0.8\textwidth]{final/gpuconv}
     \caption{TFLite OpenCL后端的卷积实现。虚线划分了工作组。橙色显示了输出张量中的一个元素涉及的计算区域。}
     \label{fig:gpuconv}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[htbp]
 	\centering
 	\includegraphics[width=0.95\textwidth]{final/analysis/conv_cin_fixed}
 	\caption{
