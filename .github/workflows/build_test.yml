@@ -19,6 +19,8 @@ jobs:
     steps:
     - name: Checkout Repo
       uses: actions/checkout@v1
+      with:
+        lfs: true
     - name: Current version
       run: echo $GITHUB_REF
     - name: Download Fonts
@@ -42,6 +44,8 @@ jobs:
     steps:
     - name: Checkout Repo
       uses: actions/checkout@v1
+      with:
+        lfs: true
     - name: Current version
       run: echo $GITHUB_REF
     - name: Download Fonts
