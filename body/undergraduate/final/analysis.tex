@@ -158,10 +158,10 @@ DSP：Hexagon DSP 600系列的向量寄存器宽度为1024位。
 一个重要的原因是，在SE（如图\ref{fig:blocks:se}）模块内，
 全局池化或逐元素张量乘法的硬件/框架支持较弱。
 在MobileNetV2+SE模块中，
-虽然相比于DWConv+ReLU6（如图\ref{fig:blocks:mobilenetv2}），
+虽然相比于逐通道卷积+ReLU6（如图\ref{fig:blocks:mobilenetv2}），
 乘法算子只占有了1/10的OPs，
-然而在VPU上它却占据了68\%的模块推理延时，而DWConv+ReLU6只需要18\%的延时。
-这可能是因为DWConv+ReLU6是由VPU内专用神经网络引擎执行的。
+然而在VPU上它却占据了68\%的模块推理延时，而逐通道卷积+ReLU6只需要18\%的延时。
+这可能是因为逐通道卷积+ReLU6是由VPU内专用神经网络引擎执行的。
 在DSP上，乘法算子也是模块的主要开销（78\%的延时），这很可能也是因为缺少框架实现的优化。
 
 在GPU上，MobileNetV2+SE模块的主要开销是全局池化(71.7\%的延时)。
@@ -190,6 +190,34 @@ ShuffleNetV2模块在VPU和NPU上高延时的原因在于Shuffle（\ref{fig:bloc
 \begin{finding}
     在CPU上，没有一个模块总是在每一层中都最好；在其他加速器上，MobileNetV1模块总是最快的。
 \end{finding}
+
+如图\ref{fig:block_latency_cpu}所示，
+随着层数加深（特征图尺寸变小，通道数增加），模块的延时响应在不断变化。
+这是因为计算和访存复杂度随层数的变化在不同模块间是不一样的。
+根据表\ref{tab:calculation}中的公式，对于卷积和分组卷积，
+假定$C_{in}=C_{out}$，该层的OPs为$H^2C_{in}^2K^2$，
+则下一层具有相同的OPs（$(1/2H)^2\times (2C_{in})^2K^2$）。
+而对于逐通道卷积，OPs相对于上一层减半（$(1/2H)^2\times 2C_{in}K^2$）。
+这对逐元素算子也成立。
+本文用输入、输出张量和内核的尺寸之和来估算一个算子访存数（mac）。
+随着层数加深，输入、输出张量的尺寸总是减半（$(1/2H)^2\times 2C_{in}$）。
+然而，卷积内核的尺寸额外增加了3倍（$(2 C_{in})^2K^2$），
+逐通道卷积的内核尺寸额外增加了1倍（$2 C_{in}K^2$）。
+
+对于由卷积和逐通道卷积组成的MobileNet模块，
+直到$14\times 14$层，输入/输出张量尺寸的减少量超过了内核尺寸的增加量。
+如图\ref{fig:block_latency_cpu}所示，
+其中$14\times 14$层有着最小的mac和最小的延时。
+
+对于由分组卷积、逐通道卷积和通道重排算子组成的ShuffleNetV1模块，
+内核尺寸远比输入/输出张量尺寸小。
+因而总mac一直在成倍减少，其延迟也不断降低。
+ShuffleNetV2模块用普通卷积代替了分组卷积，所以mac的减少量比ShuffleNetV1模块小。
+
+总的来说，MobileNetV1模块在前两层最快，
+但之后层中ShuffleNetV1/V2模块更快。
+因为其他AI加速器对非卷积算子如通道重排的支持不佳（如节\ref{analysis:op block:block with hardware}所述），
+所以MobileNetV1模块在每层上始终是最快的。
 
 \subsubsection{不同内核尺寸的算子延时}
 \label{analysis:op block:op with ksize}
