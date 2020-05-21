@@ -89,6 +89,102 @@ DSP：Hexagon DSP 600系列的向量寄存器宽度为1024位。
 
 \subsection{算子和模块}
 \label{analysis:op block}
+本节分析算子和模块的延时，
+以回答高效神经网络设计过程中普遍关注的几个问题：
+一个模块在不同处理器上（节\ref{analysis:op block:block with hardware}）、
+一个模块在神经网络模型的不同层中（节\ref{analysis:op block:block with layer}）、
+一个算子在不同的内核尺寸下（节\ref{analysis:op block:op with ksize}）、
+一个算子带有不同激活函数的情况下（节\ref{analysis:op block:activation with hardware}），
+延时表现是否相似或一样。
+
+\subsubsection{不同硬件的模块延时}
+\label{analysis:op block:block with hardware}
+
+\inputbody{final/analysis_misc/hardware_diagrams}
+
+神经网络是由重复的构建模块组成的。
+选择合适的模块是设计中的重要考虑因素。
+然而，神经网络设计者往往依靠OPs来寻找快速的模块，
+并假定模块在每个处理器上的行为都是一样的。
+本节将展示神经网络模块的真实延时特性。
+
+我们选取四个模块作为例子，
+并在图\ref{fig:latency_with_hardware}中列出它们的相对延时、相对OPs、相对mac。
+``相对''指把它们的真实值除以在同一硬件上MobileNetV1模块的对应值以表现硬件行为的差异。
+除了CPU外，其他加速器都有不支持的模块，例如，ShuffleNetV2模块不能在GPU和TPU上运行。
+因此，他们的结果在图中是缺失的。
+
+\begin{finding}
+    每个神经网络模块在不同硬件上的延时表现差异极大，特别是对非卷积算子。
+\end{finding}
+
+主要原因有两个：
+一是硬件之间内存和计算带宽差异很大。
+特别是对AI加速器来说，高计算带宽使得内存墙的问题更加严重；
+其次，AI处理器和相应框架对计算密集型的卷积或固定管线如卷积、批正则化、激活函数优化得很好，
+但是对其他算子的支持却往往是层次不齐的。
+我们将在下文中详细说明原因。
+
+\paragraph{带宽的影响}
+如图\ref{fig:latency_with_hardware}所示，模块延时和计算数仅仅在CPU上有着直接的关系。
+图\ref{fig:roofline}解释了原因。
+该图展示了理想情况下CPU和GPU的Roofline性能线，以及每个模块测试中的性能。
+如果数据重用率位于拐点左侧，则性能的上限由内存带宽决定，
+否则上限由算力限制。
+注意，此图中我们使用的CPU和GPU是在同一块SoC上的，
+它们使用同一块内存，所以Roofline中的内存受限的部分斜率是重合的。
+
+在单核CPU上，由于内存和计算带宽相近，因而Roofline拐点处的数据重用率是相当低的。
+因此，大部分模块都是计算受限的，它们的延时也与OPs直接相关。
+相比之下，计算和内存带宽不匹配的问题在GPU上就相当严重。
+数据重用率较小的模块，例如MobileNetV2+SE模块，就会变成内存受限，
+这就对芯片的峰值性能有很大的影响。
+内存带宽的问题在其他AI加速器更加严重。
+例如，轻量级的MobileNetV2模块在CPU上可以比DenseNet模块快2.89倍，
+在GPU上可以快2.13倍，但在TPU上只有1.25倍。
+
+\paragraph{非卷积算子支持较弱}
+硬件或框架实现都可能导致算子支持不佳。
+正如节\ref{nn design and deployment}中所讨论的，
+框架可以将相邻的算子融合，以避免中间结果写入内存。
+这对于减少内存密集型算子的开销特别重要。
+但是一般来说，这种融合是针对传统结构，如卷积、逐元素算子，
+但框架常常无法将它应用到新的结构上。
+
+在网络中添加SE模块被认为是可以使用极少代价就能提高模型准确度的有效方法。
+然而，图\ref{fig:latency_with_hardware}显示，
+在除了CPU的其他硬件上应用SE都会显著增加模块延时。
+除了内存带宽的影响外，
+一个重要的原因是，在SE（如图\ref{fig:blocks:se}）模块内，
+全局池化或逐元素张量乘法的硬件/框架支持较弱。
+在MobileNetV2+SE模块中，
+虽然相比于DWConv+ReLU6（如图\ref{fig:blocks:mobilenetv2}），
+乘法算子只占有了1/10的OPs，
+然而在VPU上它却占据了68\%的模块推理延时，而DWConv+ReLU6只需要18\%的延时。
+这可能是因为DWConv+ReLU6是由VPU内专用神经网络引擎执行的。
+在DSP上，乘法算子也是模块的主要开销（78\%的延时），这很可能也是因为缺少框架实现的优化。
+
+在GPU上，MobileNetV2+SE模块的主要开销是全局池化(71.7\%的延时)。
+池化在网络中的位置导致其不能与其他算子融合以避免内存访问，
+因此它引入了很大的开销。
+SE模块中的全局池化和乘法算子都不能在KPU上运行，它们会退回到SoC上的RISC-V CPU执行。
+在TPU上异常高的SE延时也表明TPU工具链对这些算子的支持较弱。
+
+ShuffleNetV2模块在VPU和NPU上高延时的原因在于Shuffle（\ref{fig:blocks:shufflenetv2}）算子。
+该算子占据了超过50\%的模块延时。
+框架通常也无法将其与其他算子融合在一起，这就形成了延时瓶颈。
+
+总结一下，由于硬件特性或框架实现的原因，模块在每个处理器上的延时表现是不同的。
+我们的基准测试可以抽象出这些细节，并为神经网络设计找到高效的模块。
+
+\subsubsection{不同层的模块延时}
+\label{analysis:op block:block with layer}
+
+\subsubsection{不同内核尺寸的算子延时}
+\label{analysis:op block:op with ksize}
+
+\subsubsection{不同硬件的激活函数延时}
+\label{analysis:op block:activation with hardware}
 
 \subsection{模型与量化算法}
 \label{analysis:model quantization}

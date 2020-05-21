@@ -1,0 +1,17 @@
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.96\linewidth}
+        \centering
+        \includegraphics[width=\textwidth]{final/analysis/latency_with_hardware}
+    	\caption{\label{fig:latency_with_hardware}}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.96\linewidth}
+        \centering
+        \includegraphics[width=\textwidth]{final/analysis/roofline}
+        \caption{\label{fig:roofline}}
+    \end{subfigure}
+    \caption{
+        (a) 不同处理器上模块的延时特性差别极大。配置：$H\times W=56 \times 56$, $C_{in}=C_{out}=32$, $K=3$, $S=1$。
+        (b) CPU和GPU的Roofline性能图。蓝色和黑色的标记分别代表了GPU和CPU上真实测量出的性能。
+    }
+\end{figure}
