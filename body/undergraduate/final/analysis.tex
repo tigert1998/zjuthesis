@@ -180,11 +180,49 @@ ShuffleNetV2模块在VPU和NPU上高延时的原因在于Shuffle（\ref{fig:bloc
 \subsubsection{不同层的模块延时}
 \label{analysis:op block:block with layer}
 
+\inputbody{final/analysis_misc/layer_diagrams}
+
+目前的神经网络设计通常采用在每一层中重复使用一种模块的方法。
+我们在不同的层（即不同的特征图尺寸）中，和在每个处理器上都测量了模块的延时，
+并在图\ref{fig:block_latency_cpu}中展示了CPU的结果。
+在测量中，特征图尺寸和通道数遵循了``特征图边长减半，通道数加倍''的规则。
+
+\begin{finding}
+    在CPU上，没有一个模块总是在每一层中都最好；在其他加速器上，MobileNetV1模块总是最快的。
+\end{finding}
+
 \subsubsection{不同内核尺寸的算子延时}
 \label{analysis:op block:op with ksize}
 
+\inputbody{final/analysis_misc/ksize_diagrams}
+
+一般来说，卷积内核尺寸（$K$）的选择是$1\times 1$、$3\times 3$、$5\times 5$和$7\times 7$。
+对于边缘设备来说，内核尺寸通常会在卷积中选择$1\times 1$，在逐通道卷积中选择$3\times 3$，
+以达到减少延时的效果（如图\ref{fig:blocks}）。
+如图\ref{fig:latency_with_ksize}所示，我们在每个处理器上评估了不同内核尺寸的延时响应。
+
+\begin{finding}
+    在AI加速器上，卷积（除TPU上的逐通道卷积）延时随内核尺寸增长的幅度相对CPU、GPU要小得多。
+\end{finding}
+
 \subsubsection{不同硬件的激活函数延时}
 \label{analysis:op block:activation with hardware}
+
+\inputbody{final/analysis_misc/activation_diagrams}
+
+激活函数作为一种逐元素算子，是内存密集型的。
+为了减少延时，框架通常将其与卷积、逐通道卷积融合在一起。
+ReLU和ReLU6作为传统的激活函数，在每个框架中都获得了最佳的融合支持，因此其开销往往可以忽略不计。
+近年来，Swish被提出用于取代ReLU，以提高准确度。
+为了降低Swish的计算复杂度，HardSwish用近似的方法来计算Swish。
+我们用逐通道卷积连接图\ref{fig:activation_latency}所示的激活函数，
+来评估这些激活函数的效率。
+
+\begin{finding}
+    激活函数对推理延时有很大的影响。
+    HardSwish仅仅在CPU和GPU上效率很高。
+    ReLU和ReLU6在所有硬件上都非常高效。
+\end{finding}
 
 \subsection{模型与量化算法}
 \label{analysis:model quantization}
