@@ -1,0 +1,38 @@
+\begin{figure}[htbp]
+	\centering
+    \includegraphics[width=1\textwidth]{final/analysis/model_accuracy}
+    \caption{
+        在权衡准确度和延时的情况下，每个处理器上最优的模型是不同的。
+        图上标注了各模型在ImageNet数据集上的Top-1准确度。
+        更深的颜色意味着更大的OPs。
+    }
+	\label{fig:model accuracy}
+\end{figure}
+
+\begin{table}[h]
+	\begin{center}  
+		\small
+		\setlength\tabcolsep{2pt}
+		\begin{tabular}	{l|c|c|cc|cc|cccc}
+			\hline
+			\multirow{3}{*}{\textbf{模型}}&	\multirow{3}{*}{{OPs}}&	{Top1-}&\multicolumn{2}{c|}{\textbf{CPU}} &\multicolumn{2}{c|}{\textbf{GPU}} &\multicolumn{4}{c}{\textbf{NPU}}\\
+			&&Acc& FP32&INT8& FP32&FP16&FP16&DFP16&DFP8&UINT8\\
+			&& (\%)& ms & ms (\%)& ms& ms (\%)& ms (\%)& ms (\%)& ms (\%)& ms (\%)\\
+			
+			\hline
+			MobileNetV1 &569M &71.02&36.2 &13.5(-0.6)&12.1&5.9(+0.6)&70.2(-0.04)&53.3(-0.02)&7.8(-20.46)&5.7(-5.06)\\
+			MobileNetV2 &300M& 71.84&24.9&12.5(-0.6)&9.9&6.2(+0.04)&72.7(-0.02)&49.5(+0.01)&8.8(-12.68)&6.2(-2.51)\\
+			MobileNetV3 &219M&75.84 &19.9&12.9(-58.7)&10.1&6.5(-0.4)&105.2(-0.54)&72.5(-0.54)&39.7(-75.7)&41.5(-75.4)\\
+            ShuffleNetV1 &140M&67.60&31.7&35.8(-67.5)& - & - & -& - & - & -\\
+            InceptionV1 &1448M&69.77 &89.1&24.9(+0.57)&28.8&19.8(+0.8)&103.2(+0.01)&34.0(+0.01)&5.3(-3.55)&5.4(-0.54)\\
+			ResNetV1\_50 &3485M&75.12 &208.5&63.7(-0.36)&53.2&33.3(-0.01)&348.6(-0.01)&145.6(-0.07)&13.5(-2.23)&13.4(-0.38)\\
+			ResNetV2\_50 &6548M&75.89&378.9&136.3(-0.89)&120.2&68.9(-0.04) &491.6(-0.31)&290.5(-0.31)&45.1(-3.83)&42.7(-0.65)\\
+            \hline
+		\end{tabular}
+	\end{center}
+    \caption{
+        量化减少了推理延时，但也大大降低了一些模型的准确度。
+        ``x(y)''的形式中，``x''表示延时，``y''表示量化模型相对于预训练模型的准确度下降。
+    }
+    \label{tab:quantization accuracy latency}
+\end{table}

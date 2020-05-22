@@ -279,3 +279,51 @@ HardSwish在NPU上的推理速度非常慢，因为它被分割成多个未融�
 
 \subsection{模型与量化算法}
 \label{analysis:model quantization}
+
+\inputbody{final/analysis_misc/quant_diagrams_and_tab}
+
+INT8或FP16量化被认为是一种有效的在精度损失很小的情况下加速模型推理的方法。
+因此，AI加速器往往是为INT8设计的。
+表\ref{tab:quantization accuracy latency}比较了支持不同量化策略的三种处理器。
+图\ref{fig:model accuracy}展示了基准测试的模型在支持的处理器上的延时和准确度。
+
+\begin{finding}
+    INT8量化在NPU上具有很高的加速比，但在CPU上可能导致速度变慢。
+\end{finding}
+
+在CPU上，SIMD单元同时支持FP32和INT8计算。
+理想情况下，除了降低为1/4的访存开销，INT8也应该达到4倍的加速比。
+然而，表\ref{tab:quantization accuracy latency}中展示的加速比是低于预期的。
+原因之一当然是计算库的实现，完全利用好SIMD单元是困难的。
+另一个原因是每个算子的输出张量都需要被复量化（Requantize）。
+\textbf{INT8复量化对数据重用率低的算子来说是开销高昂的。}
+
+为了避免算数溢出，INT8算子的输出张量类型是INT32。
+因此，框架需要复量化才能将INT32张量映射到INT8\cite{krishnamoorthi2018quantizing}的范围。
+对于高数据重用率的算子如卷积，该代价与INT8的加速相比可以忽略不记。
+但在低数据重用率的算子上，这个代价可能会超过量化的加速。
+例如，测量结果表明，在CPU上INT8加法算子比FP32版本慢达5倍。
+因此，带有SE模块（低数据重用率）的MobileNetV3仅仅用INT8量化达到了1.54的加速比。
+在ShuffleNetV1，量化甚至增加了延时。
+而运算量集中于卷积的模型如ResNet比基于逐通道卷积的MobileNet系列有着更高的INT8量化加速比。
+
+在GPU上，FP16算子的输出张量仍然是FP16，所以没有复量化开销。
+
+在NPU上，除了MobileNetV3之外UINT8和DFP8相比FP16有着超过11的加速比。
+这是因为NPU有着大量的8位卷积神经网络计算单元。
+这些计算单元可能不能很好地支持SE中的全局池化和逐元素乘法算子，
+因而MobileNetV3加速比较低。
+
+DFP16相对FP16有着1.31到3的加速比，因为DFP16比FP16计算消耗了更少的周期数。
+
+模型的准确性超出了本文的范畴。
+然而，一些量化模型显示出了意想不到的准确度损失。
+
+\begin{finding}
+    不是所有的模型都适合应用INT8量化；
+    一些AI加速器上的量化算法不是对所有的模型都鲁棒。
+\end{finding}
+
+\begin{finding}
+    考虑到通用支持性、准确度和延时，CPU依旧是个不错的选择。
+\end{finding}
