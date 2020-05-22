@@ -70,12 +70,12 @@ HardSwish用近似的方法来降低Swish的计算复杂性。
 它们的操作数从140 MOPs（ShuffleNetV1）到6.55 GOPs（ResNetV2）不等。
 模型大小从9 MB（ShuffleNetV2）到99 MB（ResNetV2）不等。
 基准测试包括了各硬件支持的所有精度，例如AI加速器上的FP16和INT8（表\ref{tab:platform}），
-来评估量化算法对各模型加速比和准确度的影响。
+来评估量化算法对各模型加速比和准确率的影响。
 
 \subsection{测量方法}
 \label{measurement}
 本文的工作在七种AI处理器测量了上述的基准测试套件来分析神经网络硬件的行为。
-本节介绍了测试平台，设置和以及延时/准确度的评估方法。
+本节介绍了测试平台，设置和以及延时/准确率的评估方法。
 
 \paragraph{处理器和框架}
 
