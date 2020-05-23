@@ -18,8 +18,8 @@ CPU和GPU被广泛用于边缘端神经网络推理。
 FP32和FP64超出了神经网络推理的需要\cite{hennessy2019new}。
 因而边缘AI加速器往往采用INT8，INT16或FP16进行推理。
 
-下文中，我们将简要介绍本文评估的多种工业级AI加速器的主要特点（todo）。
-节todo中将提供更多的信息。
+下文中，我们将简要介绍本文评估的多种工业级AI加速器的主要特点（如表\ref{tab:platform}所示）。
+节\ref{methodology}中将提供更多的信息。
 这些加速器是大多是厂商专有的，公开的描述资料很少。
 
 \paragraph{AI加速器}
@@ -65,7 +65,7 @@ SHAVE核心\cite{shave}混合RISC/DSP/GPU的架构。
 也提出了最优通道数的解法。
 
 近年CNN的工作\cite{he2016deep, ma2018shufflenet, sandler2018mobilenetv2}
-通常会设计一个高效的模块（todo），并在每一阶段中重复它。
+通常会设计一个高效的模块（如图\ref{fig:blocks}所示），并在每一阶段中重复它。
 ResNet\cite{he2016deep}使用残差模块和短路连接来达到令人印象深刻的精度。
 DenseNet\cite{huang2017densely}通过添加更密集的层与层之间的全连接来改进ResNet。
 为了在资源有限的边缘设备部署上网络，MobileNetV1\cite{howard2017mobilenets}
@@ -85,7 +85,8 @@ MixConv\cite{tan2019mixconv}也是一个高效的模块，
 首先是计算密集型的卷积被替换为其他访存密集型算子，例如通道重排。
 第二是新算子被引入以提高准确率。
 这些趋势可以有效地帮助提高CPU上的模型推理性能。
-但是，当下主要用于加速卷积的AI加速器几乎无法适应这些趋势，并可能产生性能问题（todo）。
+但是，当下主要用于加速卷积的AI加速器几乎无法适应这些趋势，并可能产生性能问题
+（节\ref{analysis}会详细分析）。
 
 \paragraph{模型部署}
 当专家完成神经网络模型的设计后，模型需要经过额外的部署过程来在目标设备上推理。
